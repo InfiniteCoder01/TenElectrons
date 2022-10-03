@@ -4,7 +4,7 @@
 
 void levelEditor(MvFont& timerFont) {
   static std::string paletteMessage;
-  const char* brushes = "#EeTr|^Ph";
+  const char* brushes = "#EeTr|^Phg";
   static char brush = '#';
   if (Mova::getCharPressed() && strchr(brushes, Mova::getCharPressed())) brush = Mova::getCharPressed();
   vec2 mouseTile = glm::floor(vec2(Mova::getMousePos() + camera) / tileSize);
@@ -83,7 +83,7 @@ void levelEditor(MvFont& timerFont) {
   }
   if (Mova::isKeyPressed(MvKey::F2) || paletteMessage == "message") {
     message = std::string((char*)EM_ASM_PTR({
-      var text = prompt("New sign message:");
+      var text = prompt("New sign message (Use \\\\n to put newline character):").replace("\\\\n", "\\n");
       var lengthBytes = lengthBytesUTF8(text) + 1;
       var stringOnWasmHeap = _malloc(lengthBytes);
       stringToUTF8(text, stringOnWasmHeap, lengthBytes);

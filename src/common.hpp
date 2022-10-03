@@ -3,6 +3,7 @@
 #include <mova.h>
 #include <mgame.h>
 #include <glm.hpp>
+#include <sstream>
 
 using glm::vec2;
 using glm::vec3;
@@ -39,4 +40,12 @@ std::string decodeRLE(std::string s) {
     i++;
   }
   return res;
+}
+
+template <typename T>
+std::string to_string(const T a_value, const int n = 6){
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return out.str();
 }

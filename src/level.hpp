@@ -8,11 +8,9 @@ MvImage tileset, ball;
 bool editor = false, completed = false, restart = false, pong = false, pongFail = false, pongWin = false;
 
 vec2 camera;
-uint32_t levelWidth, levelHeight, levelIndex = 2;
+uint32_t levelWidth, levelHeight, levelIndex = 0;
 std::string levels[] = {
-    "19 ~128 11e9 e2T6E|e9 9e|e ;400a;",
-    "19 ~14 6e14 2e|3e14 2e|E2T11 9#11 9#210 ^18 eE9e9 e7E2Te9 11e;800a;",
-    "99 ~700 39#7 47#7 39#7 47#7 39#7 47#7 39#7 47#7 39#7 47#7 39#7 47#7 #6 PE2Tr21 6#7 47#7 #9 2E34 47#7 #45 47#7 #45 47#7 #32 6#7 55# 37#7 47#2T4E2# 37#7 52#E2# 37#7 52#E2# 37#7 52#E2# 37#7 52#E2# 37#34 25#E2# 37#33 h25#E2# 96#E2#96 eEe#96 e|e#96 e|e;2823ab3176a;2s",
+    "19 ~128 11e9 e2T6E|e9 9e|e ;400a;", "19 ~14 6e14 2e|3e14 2e|E2T11 9#11 9#210 ^18 eE9e9 e7E2Te9 11e;800a;", "99 ~700 39#7 47#7 39#7 47#7 39#7 47#7 39#7 47#7 39#7 47#7 39#7 47#7 #6 PE2Tr21 6#7 47#7 #9 2E34 47#7 #45 47#7 #45 47#7 #32 6#7 55# 37#7 47#2T4E2# 37#7 52#E2# 37#7 52#E2# 37#7 52#E2# 37#7 52#E2# 37#34 25#E2# 37#33 h25#E2# 96#E2#96 eEe#96 e|e#96 e|e;2823ab3176a;Resetter to the right of the timer\ngives pong robot infinite power\njump into it and\npress interact button\nto destroy it!", "10 5#4 ~10 #6 3e4 5# #6 e|e4 5# #6 e|e4 5#4 5#E#4 5#4 5#E#4 #15E4 #E3#4 6#E3 ^#E3#3 ^6#E3 E2TrE#3 E2TrE2#E3 4#E#3 4#E2#E3 #4E#3 #4E2#E3 #E4#3 #E5#E3 #E4#3 #E5#E3 #E4#3 #E5#E3 #E4#3 #E5#E3 #E4#3 #E5#E3 #E4#3 #E5#E3 #E4#3 #E5#E3 #E4#3 #E5#E3 #E4#3 #E5#E2 ^#E4#2 ^#E5#E2 E2TrE2#2 E2TrE3#E2 4#E2#2 4#E3#E2 #4E2#2 #4E3#E2 #E5#2 #E6#E2 #E5#2 #E6#E2 #E5#2 #E6#E2 #E5#2 #E6#E2 #E5#2 #E6#E2 #E5#2 #E6#E2 #E5#2 #E6#E2 #E5#2 #E6#E2 #E5#2 #E6#E ^#E5# ^#E6#E E2TrE3# E2TrE4#E 4#E3# 4#E4#E #4E3# #4E4#E #E6# #E7#E #E6# #E7#E #E6# #E7#E #E6# #E7#E #E6# #E7#E #E6# #E7#E #E6# #E7#E #E4#5E7#E #E4#E# 9#E^#E4#E#^9#4E4#E#E9#E#2T4#2E2Tr8E;373ae15aeae499ae15aeae499ae15aeae555ah16a;", "",
 };
 std::string llevel, message;
 float* lpower = nullptr;
@@ -42,6 +40,11 @@ void loadLevel(std::string level) {
 }
 
 char getTile(vec2 pos) {
+  if (levelIndex == 4) {
+    if (pos.y > levelHeight - 3) return 'g';
+    else if(pos == vec2(levelWidth - 3, levelHeight - 3)) return 'f';
+    return ' ';
+  }
   if (pos.x < 0 || pos.y < 0 || pos.x >= levelWidth || pos.y >= levelHeight) return '#';
   return llevel[pos.x + pos.y * levelWidth];
 }
@@ -107,7 +110,7 @@ void drawTile(vec2 pos) {
     Mova::drawText(screen + vec2(5, 5) * pixel, buf, green);
   } else if (tile == 'r') {
     Mova::drawImage(tileset, screen, vec2(tileSize), FLIP_NONE, vec2(2, 4) * TILE_SIZE, vec2(TILE_SIZE));
-    if (getPower(pos) == 0) Mova::drawText(screen + vec2(5, 5) * pixel, std::to_string(getProp(pos)), green);
+    if (getPower(pos) == 0) Mova::drawText(screen + vec2(2, 5) * pixel, to_string(getProp(pos) / 2.f, 1), green);
   } else if (tile == '|') {
     if (getTile(pos + vec2(0, 1)) != '|') return;
     if (completed && getPower(pos) < 0.5 || getPower(pos) > 1) setPower(pos, 0.5);
@@ -134,8 +137,14 @@ void drawTile(vec2 pos) {
     }
     Mova::drawLine(screen + vec2(tileSize / 2, 0), screen + vec2(tileSize / 2, tileSize * 5.5f), black);
     Mova::drawImage(tileset, screen + vec2(0, height), vec2(tileSize), FLIP_NONE, vec2(2, 5) * TILE_SIZE, vec2(TILE_SIZE));
-  } else if(tile == 'h') {
+  } else if (tile == 'h') {
     Mova::drawImage(tileset, screen, vec2(tileSize), FLIP_NONE, vec2(0, 6) * TILE_SIZE, vec2(TILE_SIZE));
+  } else if (tile == 'g') {
+    srand((int)(pos.x + pos.y * levelWidth));
+    if (rand() % 100 > 60 && getTile(pos + vec2(0, -1)) == 'g') Mova::drawImage(tileset, screen, vec2(tileSize), FLIP_NONE, vec2(rand() % 4, 7) * TILE_SIZE, vec2(TILE_SIZE));
+    else Mova::drawImage(tileset, screen, vec2(tileSize), FLIP_NONE, vec2(1 + (getTile(pos + vec2(0, -1)) == 'g') + (rand() % 100 > 90) * 2, 6) * TILE_SIZE, vec2(TILE_SIZE));
+  } else if (tile == 'f') {
+    Mova::drawImage(tileset, screen, vec2(tileSize), FLIP_NONE, vec2(4, 7) * TILE_SIZE, vec2(TILE_SIZE));
   }
 }
 
@@ -144,7 +153,7 @@ void drawTile2(vec2 pos) {
   vec2 screen = pos * tileSize - camera;
   float pixel = tileSize / TILE_SIZE;
   if (tile == 'E') {
-    drawPatch(screen, pos, vec2(0, 2 + (getPower(pos) > 0)), "ETr|P");
+    drawPatch(screen, pos, vec2(0, 2 + (getPower(pos) > 0)), "ETr|^P");
   } else if (tile == '|') {
     if (getTile(pos + vec2(0, 1)) != '|') return;
     Mova::drawImage(tileset, screen, vec2(1, 2) * tileSize, FLIP_NONE, vec2(3, 4) * TILE_SIZE, vec2(1, 2) * TILE_SIZE);
@@ -185,8 +194,8 @@ void updateLevel() {
     } else if (getTile(pos) == 'r') {
       if (getPower(pos) <= 0) continue;
       if (getTile(pos + vec2(-1, 0)) != 'T') continue;
-      setPower(pos + vec2(-1, 0), getProp(pos));
-      setPower(pos + vec2(-2, 0), getProp(pos));
+      setPower(pos + vec2(-1, 0), getProp(pos) / 2.f);
+      setPower(pos + vec2(-2, 0), getProp(pos) / 2.f);
     } else if (getTile(pos) == '|') {
       if (getTile(pos + vec2(0, 1)) == '|') setPower(pos + vec2(0, 1), getPower(pos));
       else setPower(pos + vec2(0, -1), getPower(pos));

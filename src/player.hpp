@@ -1,8 +1,8 @@
-#include <emscripten.h>
 #include "common.hpp"
 
 MvImage playerRed;
 float finishTimer;
+bool messageShown = false;
 struct Player {
   MvImage* image;
   Flip flip = FLIP_NONE;
@@ -34,7 +34,7 @@ struct Player {
         vec2 pos = vec2(x - 1, y - 1);
         float yOff = (Player::pos.y + size.y) / tileSize - pos.y;
         char tile = getTile(pos);
-        if (tile == '#') return true;
+        if (tile == '#' || tile == 'g') return true;
         if (tile == '^' && yOff > (getPower(pos) > 0 ? 0.375 : 0.5625)) {
           if (getPower(pos) > 0 && delta.y > 0) speed.y = -20 * tileSize;
           return true;
@@ -45,11 +45,9 @@ struct Player {
             door = pos;
           } else if (!completed) return true;
         }
-        if (tile == 'r' && Mova::isKeyHeld(MvKey::ShiftLeft)) {
-          setTile(pos, ' ');
-        }
-        if(tile == 'h' && Mova::isKeyPressed(MvKey::E)) {
-          EM_ASM(alert(UTF8ToString($0));, message.c_str());
+        if (Mova::isKeyHeld(MvKey::E)) {
+          if (tile == 'r') setTile(pos, ' ');
+          if (tile == 'h' || tile == 'f') messageShown = true;
         }
       }
     }
